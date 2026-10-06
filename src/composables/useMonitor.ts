@@ -72,7 +72,9 @@ async function boot(): Promise<boolean> {
   initApiBases()
   state.error = ''
   const bases = getApiBases()
-  const results = await Promise.all(bases.map((b) => fetchConfig(b, { turnstileToken: true })))
+  let results = await Promise.all(bases.map((b) => fetchConfig(b, { turnstileToken: true })))
+  // 缓存的 Turnstile 凭证失效时 http 层已清掉，重试一次即可拿到干净的配置
+  if (results.some((r) => r.status === 403)) results = await Promise.all(bases.map((b) => fetchConfig(b)))
   const first = results.find((r) => r.ok)?.data || null
   if (!first) {
     state.error = results[0]?.error || '无法连接到后端'
