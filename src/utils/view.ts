@@ -62,7 +62,7 @@ export interface CardView {
   searchText: string
 }
 
-const pctText = (v: number | null) => (v === null ? '—' : `${trimFixed(v, 1)}%`)
+const pctText = (v: number | null) => (v === null ? '—' : `${v.toFixed(1)}%`)
 
 export function toCardView(e: ServerEntry, sys: SysConfig, now: number): CardView {
   const s: Server = e.server

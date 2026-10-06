@@ -369,7 +369,7 @@ const infos = computed(() => {
 }
 .overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
 .ov {
@@ -398,7 +398,7 @@ const infos = computed(() => {
 }
 .infos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
   gap: 12px;
 }
 .info {

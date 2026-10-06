@@ -42,7 +42,16 @@ const rightMax = computed(() => props.rightMax ?? maxOf(true))
 const hasRight = computed(() => props.series.some((s) => s.right))
 
 const n = computed(() => props.ts.length)
-const xAt = (i: number) => (n.value <= 1 ? W / 2 : (i / (n.value - 1)) * W)
+const t0 = computed(() => props.ts[0] ?? 0)
+const span = computed(() => Math.max(1, (props.ts[n.value - 1] ?? 0) - t0.value))
+// 横轴按真实时间排布，上报中断的时段自然空出来
+const xAt = (i: number) => (n.value <= 1 ? W / 2 : ((props.ts[i] - t0.value) / span.value) * W)
+/** 相邻两点间隔超过中位步长 3 倍视为断档 */
+const gapAfter = computed(() => {
+  const steps = props.ts.slice(1).map((t, i) => t - props.ts[i]).sort((a, b) => a - b)
+  const median = steps[Math.floor(steps.length / 2)] || 0
+  return (i: number) => median > 0 && i + 1 < n.value && props.ts[i + 1] - props.ts[i] > median * 3
+})
 const yAt = (v: number, right = false) => {
   const m = right ? rightMax.value : leftMax.value
   return PAD_T + (1 - Math.min(v, m) / m) * (H - PAD_T - PAD_B)
@@ -65,7 +74,10 @@ const paths = computed(() =>
     }
     s.values.forEach((v, i) => {
       if (v === null || !Number.isFinite(v)) flush()
-      else cur.push([xAt(i), yAt(v, s.right)])
+      else {
+        cur.push([xAt(i), yAt(v, s.right)])
+        if (gapAfter.value(i)) flush()
+      }
     })
     flush()
     return { ...s, line: segs.join(' '), area: areas.join(' ') }
@@ -74,15 +86,17 @@ const paths = computed(() =>
 
 const ticks = computed(() => {
   if (n.value < 2) return []
-  return [0, 0.25, 0.5, 0.75, 1].map((f) => formatClock(props.ts[Math.round(f * (n.value - 1))], props.withDate))
+  return [0, 0.25, 0.5, 0.75, 1].map((f) => formatClock(t0.value + f * span.value, props.withDate))
 })
 
 function onMove(ev: PointerEvent) {
   const el = box.value
   if (!el || n.value === 0) return
   const r = el.getBoundingClientRect()
-  const f = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width))
-  hover.value = Math.round(f * (n.value - 1))
+  const target = t0.value + Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * span.value
+  let best = 0
+  for (let i = 1; i < n.value; i += 1) if (Math.abs(props.ts[i] - target) < Math.abs(props.ts[best] - target)) best = i
+  hover.value = best
 }
 
 const tip = computed(() => {
@@ -148,7 +162,7 @@ const tip = computed(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 44px;
+  width: 52px;
   flex-shrink: 0;
   font-size: 10px;
   color: var(--sub);

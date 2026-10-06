@@ -1,6 +1,6 @@
 // 历史行 / 实时样本 → 图表序列；缺失值保留为 null，图上断开
 import type { HistoryRow, ProbeValue, Server } from '@/api/types'
-import { formatBytes, formatSpeed, normalizeTs, toNumber, trimFixed } from './format'
+import { compactSpeed, formatBytes, formatSpeed, normalizeTs, toNumber, trimFixed } from './format'
 import { NET_KEYS, type NetKey } from './server'
 
 export interface ChartSeries {
@@ -139,7 +139,7 @@ export function buildCharts(frames: Frame[], server: Server | null): ChartSpec[]
         { name: '下行', color: 'var(--blue)', values: rx, area: true },
         { name: '上行', color: 'var(--ochre)', values: tx }
       ],
-      format: (v) => formatSpeed(v)
+      format: (v) => `${compactSpeed(v)}/s`
     })
   }
   if (hasData(tcp) || hasData(udp)) {
@@ -169,7 +169,7 @@ export function buildCharts(frames: Frame[], server: Server | null): ChartSpec[]
         { name: '读', color: 'var(--jade)', values: rd, area: true },
         { name: '写', color: 'var(--zhu)', values: wr }
       ],
-      format: (v) => formatSpeed(v)
+      format: (v) => `${compactSpeed(v)}/s`
     })
   }
   return specs

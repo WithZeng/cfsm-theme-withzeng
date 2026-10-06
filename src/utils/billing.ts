@@ -106,7 +106,7 @@ export function remainingValue(s: Server, now = Date.now()): number | null {
   const left = daysLeft(s, now)
   if (p === null || p <= 0 || left === null || left <= 0) return null
   const cycleDays = CYCLES[detectCycle(s)].months * 30.4375
-  return (p / cycleDays) * Math.min(left, cycleDays)
+  return (p / cycleDays) * left
 }
 
 export const isAutoRenew = (s: Server) => s.auto_renewal === '1' || s.auto_renewal === 'true'

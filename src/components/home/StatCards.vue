@@ -59,7 +59,7 @@ const stats = computed(() => {
 <style scoped>
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
 }
 .stat {
@@ -98,5 +98,16 @@ const stats = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+@media (max-width: 560px) {
+  .stats {
+    gap: 8px;
+  }
+  .stat {
+    padding: 10px 12px;
+  }
+  .num {
+    font-size: 20px;
+  }
 }
 </style>
